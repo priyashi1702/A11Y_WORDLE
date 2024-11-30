@@ -1,0 +1,754 @@
+/* Import Montserrat font */
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,700');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+}
+
+body{
+    width:100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: #22272e;
+    gap:20px;
+}
+
+h1 {
+    font-size: 1.2rem; /* Reduced the font size */
+    color: rgb(225, 225, 225);
+    background: rgba(255, 255, 255, 0.114);
+    position: absolute;
+    top: 2px;
+    padding: 8px 16px; /* Adjusted padding to match the smaller font */
+    border-radius: 2px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    z-index: 10; /* Ensure header stays above the other content */
+    margin-bottom: 20px; /* Added margin at the bottom to provide space */
+}
+
+.board{
+    width: 340px;
+    height: 430px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap:10px;
+}
+
+.word{
+    width:100%;
+    display:flex;
+    justify-content: space-evenly;
+}
+.word div{
+    width: 60px;
+    height:60px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    transition: all 0.3s ease-in-out;
+    background-color:rgba(255, 255, 255, 0.116);
+    color:rgba(255, 255, 255, 0.89);
+    border-radius: 3px;
+    border: 1px solid rgba(128, 128, 128, 0.321);
+}
+
+.word div:hover{
+    background-color: skyblue;
+    color: rgb(59, 72, 77);
+    cursor: pointer;
+}
+
+.buttons{
+    width: 700px;
+    display: flex;
+    flex-wrap:wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+button{
+    width: 45px;
+    height: 55px; 
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.1s ease-in-out;
+    user-select: none;
+    border:none;
+    outline:none;
+    color: rgb(225, 225, 225);
+    background-color:rgba(255, 255, 255, 0.114);
+}
+
+
+button:hover{
+    background-color:rgba(255, 255, 255, 0.296);
+}
+
+button:active{
+    transform: scale(0.9);
+}
+.incorrect{
+    background-color: rgb(114, 114, 114) !important;
+    animation: rotate 1.2s linear; 
+}
+
+.present{
+    background-color: rgba(214, 163, 52, 0.796) !important;
+    animation: rotate 1.2s linear; 
+}
+
+.correct{
+    background-color: rgb(86, 171, 86) !important;
+    animation: rotate 1.2s linear; 
+}
+
+
+
+.new{
+    display:none;
+    position:absolute;
+    top: 10px;
+    right:10px;
+    background-color: rgb(64, 63, 72);
+    padding:15px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    color:white;
+}
+
+.new:hover{
+    background-color: rgb(60, 62, 65);
+}
+
+.new:active{
+    transform: scale(0.9);
+}
+
+.alert{
+    position:absolute;
+    background-color: rgb(38, 41, 47);
+    padding:20px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease-in-out;
+    transform:scale(0);
+    border: 1px solid rgba(255, 255, 255, 0.138);
+    color: white;
+    box-shadow: 0 0 200px 1000px rgba(255, 255, 255, 0.138);
+    display:flex;
+    align-items: center;
+}
+
+.active{
+    transform:scale(1);
+}
+#enter, #clear{
+    width:70px;
+    background-color: skyblue;
+    color: rgb(59, 72, 77);
+}
+
+
+
+
+@media screen and (max-width: 700px) {
+    body{
+        gap:40px;
+    }
+    h1{
+        font-size: 1.6rem;
+        transform:translateY(-30px)
+    }
+    .board{
+        width:300px;
+        height: 300px;
+        gap:5px;
+    }
+
+    .word div{
+        width:50px;
+        height:50px;
+    }
+
+    .buttons{
+        width:320px;
+        gap:5px;
+    }
+
+    button{
+        width:28px;
+        height:38px;
+        font-size: 0.8rem;
+        transition: 0.1s ease all;
+    }
+    #enter, #clear{
+        width:45px;
+    }
+}
+    
+@keyframes rotate {
+    0%{
+        transform:rotateX(0deg);
+    }
+    50%{
+        transform:rotateX(180deg);
+    }
+    100%{
+        transform:rotateX(0deg);
+    }
+}
+
+@keyframes scale {
+    0%{
+        transform:scale(1);
+    }
+    50%{
+        transform:scale(1.1);
+    }
+    100%{
+        transform:scale(1);
+    }
+}
+
+span{
+    font-size:32px;
+    color:lightgreen;
+    padding:10px;
+}
+
+.scale{
+    animation: scale 0.5s linear; 
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with transparency */
+    z-index: 1000; /* High z-index to cover everything else */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: left;
+    position: relative;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.example {
+    margin-top: 20px;
+}
+
+.word-box {
+    display: flex;
+    gap: 5px;
+}
+
+.tile {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    border-radius: 5px;
+    background-color: lightgray;
+    color: black;
+}
+
+.tile.correct {
+    background-color: #6aaa64; /* Green */
+}
+
+.tile.present {
+    background-color: #c9b458; /* Yellow */
+}
+
+.tile.incorrect {
+    background-color: #787c7e; /* Gray */
+}
+
+
+.info-btn {
+    background-color: #75d0ee; /* Blue */
+    color: rgb(8, 8, 8);
+    width: 50px; /* Set width and height to the same value for a circle */
+    height: 50px;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%; /* Makes the button circular */
+    font-size: 16px; /* Adjust font size as needed */
+    text-align: center;
+    line-height: 50px; /* Centers text vertically */
+    display: inline-block;
+    transition: background-color 0.3s ease;
+    
+    /* Positioning */
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+}
+
+
+/* Score Board Styling */
+/* Import Montserrat font */
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,700');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+}
+
+body{
+    width:100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: #22272e;
+    gap:20px;
+}
+
+h1{
+    font-size: 2.5rem;
+    color: rgb(225, 225, 225);
+    background:rgba(255, 255, 255, 0.114);
+    position:absolute;
+    top: 5px;
+    padding: 10px 20px;
+    border-radius: 2px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);;
+}
+
+.board{
+    width: 340px;
+    height: 430px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap:10px;
+}
+
+.word{
+    width:100%;
+    display:flex;
+    justify-content: space-evenly;
+}
+.word div{
+    width: 60px;
+    height:60px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    transition: all 0.3s ease-in-out;
+    background-color:rgba(255, 255, 255, 0.116);
+    color:rgba(255, 255, 255, 0.89);
+    border-radius: 3px;
+    border: 1px solid rgba(128, 128, 128, 0.321);
+}
+
+.word div:hover{
+    background-color: skyblue;
+    color: rgb(59, 72, 77);
+    cursor: pointer;
+}
+
+.buttons{
+    width: 700px;
+    display: flex;
+    flex-wrap:wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+button{
+    width: 45px;
+    height: 55px; 
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.1s ease-in-out;
+    user-select: none;
+    border:none;
+    outline:none;
+    color: rgb(225, 225, 225);
+    background-color:rgba(255, 255, 255, 0.114);
+}
+
+
+button:hover{
+    background-color:rgba(255, 255, 255, 0.296);
+}
+
+button:active{
+    transform: scale(0.9);
+}
+.incorrect{
+    background-color: rgb(114, 114, 114) !important;
+    animation: rotate 1.2s linear; 
+}
+
+.present{
+    background-color: rgba(214, 163, 52, 0.796) !important;
+    animation: rotate 1.2s linear; 
+}
+
+.correct{
+    background-color: rgb(86, 171, 86) !important;
+    animation: rotate 1.2s linear; 
+}
+
+
+
+.new{
+    display:none;
+    position:absolute;
+    top: 10px;
+    right:0px;
+    background-color: rgb(64, 63, 72);
+    padding:15px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    color:white;
+}
+
+.new:hover{
+    background-color: rgb(60, 62, 65);
+}
+
+.new:active{
+    transform: scale(0.9);
+}
+
+.alert{
+    position:absolute;
+    background-color: rgb(38, 41, 47);
+    padding:20px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease-in-out;
+    transform:scale(0);
+    border: 1px solid rgba(255, 255, 255, 0.138);
+    color: white;
+    box-shadow: 0 0 200px 1000px rgba(255, 255, 255, 0.138);
+    display:flex;
+    align-items: center;
+}
+
+.active{
+    transform:scale(1);
+}
+#enter, #clear{
+    width:70px;
+    background-color: skyblue;
+    color: rgb(59, 72, 77);
+}
+
+
+
+
+@media screen and (max-width: 700px) {
+    body{
+        gap:40px;
+    }
+    h1{
+        font-size: 1.6rem;
+        transform:translateY(-30px)
+    }
+    .board{
+        width:300px;
+        height: 300px;
+        gap:5px;
+    }
+
+    .word div{
+        width:50px;
+        height:50px;
+    }
+
+    .buttons{
+        width:320px;
+        gap:5px;
+    }
+
+    button{
+        width:28px;
+        height:38px;
+        font-size: 0.8rem;
+        transition: 0.1s ease all;
+    }
+    #enter, #clear{
+        width:45px;
+    }
+}
+    
+@keyframes rotate {
+    0%{
+        transform:rotateX(0deg);
+    }
+    50%{
+        transform:rotateX(180deg);
+    }
+    100%{
+        transform:rotateX(0deg);
+    }
+}
+
+@keyframes scale {
+    0%{
+        transform:scale(1);
+    }
+    50%{
+        transform:scale(1.1);
+    }
+    100%{
+        transform:scale(1);
+    }
+}
+
+span{
+    font-size:32px;
+    color:lightgreen;
+    padding:10px;
+}
+
+.scale{
+    animation: scale 0.5s linear; 
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with transparency */
+    z-index: 1000; /* High z-index to cover everything else */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: left;
+    position: relative;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    color: black;
+}
+
+.example {
+    margin-top: 20px;
+}
+
+.word-box {
+    display: flex;
+    gap: 5px;
+}
+
+.tile {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    border-radius: 5px;
+    background-color: lightgray;
+    color: black;
+}
+
+.tile.correct {
+    background-color: #6aaa64; /* Green */
+}
+
+.tile.present {
+    background-color: #c9b458; /* Yellow */
+}
+
+.tile.incorrect {
+    background-color: #787c7e; /* Gray */
+}
+
+
+.info-btn {
+    background-color: #75d0ee; /* Blue */
+    color: rgb(8, 8, 8);
+    width: 50px; /* Set width and height to the same value for a circle */
+    height: 50px;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%; /* Makes the button circular */
+    font-size: 16px; /* Adjust font size as needed */
+    text-align: center;
+    line-height: 50px; /* Centers text vertically */
+    display: inline-block;
+    transition: background-color 0.3s ease;
+    
+    /* Positioning */
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+}
+
+
+/* Score Board Styling */
+/* Adjusted Score Board Styling (narrower and no reset button) */
+.score-board {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-top: 20px;
+    background-color: #333;  /* Darker background for better contrast */
+    color: white;  /* White text for better visibility */
+    padding: 10px 15px;  /* Reduced padding for a narrower board */
+    border-radius: 8px;  /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);  /* Softer, subtle shadow */
+    width: fit-content;  /* Adjust width to content */
+    max-width: 250px;  /* Limit maximum width */
+}
+
+/* Score Board Text Styling */
+.score-board span {
+    font-size: 18px;  /* Ensure text size fits within the narrower board */
+    font-weight: bold;  /* Optional: Make score text bold for emphasis */
+}
+
+
+/* Reset Score Button Styling */
+.reset-score {
+    margin-left: 15px;
+    padding: 8px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #2196F3;  /* Blue background */
+    color: white;  /* White text */
+    border: none;
+    border-radius: 5px;  /* Rounded corners */
+    transition: background-color 0.3s ease;  /* Smooth hover effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Slight shadow */
+}
+
+/* Button Hover and Focus States */
+.reset-score:hover {
+    background-color: #1976D2;  /* Darker blue on hover */
+}
+
+.reset-score:active {
+    background-color: #0D47A1;  /* Even darker blue on click */
+}
+
+/* Optional: Adding some padding around the text */
+.reset-score:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.4); /* Focus effect */
+}
+
+
+
+
+
+
+
+
+
+/* Reset Score Button Styling */
+.reset-score {
+    margin-left: 15px;
+    padding: 8px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #2196F3;  /* Blue background */
+    color: white;  /* White text */
+    border: none;
+    border-radius: 5px;  /* Rounded corners */
+    transition: background-color 0.3s ease;  /* Smooth hover effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Slight shadow */
+}
+
+/* Button Hover and Focus States */
+.reset-score:hover {
+    background-color: #1976D2;  /* Darker blue on hover */
+}
+
+.reset-score:active {
+    background-color: #0D47A1;  /* Even darker blue on click */
+}
+
+/* Optional: Adding some padding around the text */
+.reset-score:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.4); /* Focus effect */
+}
+
+
+
+
+
+
+
