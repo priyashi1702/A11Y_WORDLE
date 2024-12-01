@@ -31,7 +31,7 @@ window.addEventListener('click', function (event) {
 // Function to get a random word from the accessibility list
 var randomWord = function () {
     let unusedWords = accessibilityWords.filter(wordData => 
-        !gameConfig.usedWords.includes(wordData.word.toLowerCase())
+        !JSON.parse(sessionStorage.getItem("usedWords")).includes(wordData.word.toLowerCase())
     );
     var randomIndex = Math.floor(Math.random() * unusedWords.length);
     return unusedWords[randomIndex];
@@ -60,7 +60,7 @@ var disableButtons = function () {
 // Function to reset the game board and handle new rounds
 function resetGameBoard() {
     // Check if the maximum rounds have been played before starting a new game
-    if (gameConfig.playedRounds >= gameConfig.maxRounds) {
+    if (sessionStorage("playedRounds") >= gameConfig.maxRounds) {
         alertBox.classList.toggle('active');
         alertBox.innerHTML = `
             <div style="text-align: center; padding: 20px;">
@@ -95,7 +95,7 @@ function resetGameBoard() {
     } while (gameConfig.usedWords.includes(correctWordData.word.toLowerCase()));
  
     correctWord = correctWordData.word.toLowerCase(); // Set the new correct word
-    gameConfig.usedWords.push(correctWord);  // Add the word to the used words list
+    sessionStorage.setItem("usedWords", JSON.stringify(sessionStorage.getItem("usedWords").push(correctWord)));  // Add the word to the used words list
  
     // Increment the played rounds **only after selecting a new word**
     
@@ -107,9 +107,9 @@ function resetGameBoard() {
 // New Game button functionality
 newGame.addEventListener("click", function () {
  
-    gameConfig.playedRounds++;
+    sessionStorage.setItem("playedRounds", sessionStorage.getItem("playedRounds") + 1);
     // Ensure that rounds have not been exceeded
-    if (gameConfig.playedRounds < gameConfig.maxRounds) {
+    if (sessionStorage.getItem("playedRounds") < gameConfig.maxRounds) {
         resetGameBoard();  // Reset the game board
         newGame.style.display = "none";  // Hide the "New Game" button after it's clicked
         scoreDisplay.innerText = score;  // Ensure score is displayed correctly
@@ -221,7 +221,7 @@ for (var i = 0; i < buttons.length; i++) {
                         disableButtons();
                         newGame.style.display = "block";
  
-                        if (gameConfig.playedRounds >= gameConfig.maxRounds-1) {
+                        if (sessionStorage.getItem("playedRounds") >= gameConfig.maxRounds-1) {
                         alertBox.classList.toggle('active');
         alertBox.innerHTML = `
             <div style="text-align: center; padding: 20px;">
@@ -262,7 +262,7 @@ for (var i = 0; i < buttons.length; i++) {
                             alertBox.classList.remove('active');  // Close the alert box
                         });
                     
-                        if (gameConfig.playedRounds >= gameConfig.maxRounds-1) {
+                        if (sessionStorage.getItem("playedRounds") >= gameConfig.maxRounds-1) {
                         alertBox.classList.toggle('active');
         alertBox.innerHTML = `
             <div style="text-align: center; padding: 20px;">

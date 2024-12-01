@@ -117,6 +117,7 @@ button:active{
 
 
 .new{
+    z-index: 999;
     display:none;
     position:absolute;
     top: 10px;

@@ -3,12 +3,144 @@ import { words } from './words.js';
 
 import { accessibilityWords } from './accessibility-words.js';
 
-import { gameConfig } from './config.js';
+var userID;
+var gameID;
+
+const params = new URLSearchParams(window.location.search);
+
+if (params.has('userId')) {
+    userID = params.get('userId');
+    sessionStorage.setItem('user-id', userID);
+} else {
+    window.location.href = cloudURL;
+}
+
+// var currentRound = gameConfig.playedRounds + 1
+// document.getElementById('question_number').innerHTML = "Question: " + String(currentRound);
+
+async function createGameDocument() {
+    try {
+        const response = await fetch(cloudURL + '/createDocument', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ collectionName: collectionName })
+        });
+
+        const data = await response.json();
+        gameID = data.documentId;
+        console.log("New game document created with ID:", gameID);
+        sessionStorage.setItem("gameID", gameID);
+        await fetchPlayerData();
+    } catch (error) {
+        console.error("Error creating document:", error);
+    }
+}
+
+async function fetchPlayerData() {
+    try {
+        const response = await fetch(cloudURL + `/getDocumentData?collectionName=player-data&id=${userID}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.length > 0) {
+            const previousGames = data[0].accessibilityWorlde || [];
+            previousGames.push(gameID);
+            sessionStorage.setItem('previous-games', JSON.stringify(previousGames));
+            await updatePlayerData(previousGames);
+        } else {
+            console.error("No data found for the given document ID");
+        }
+    } catch (error) {
+        console.error("Error fetching document data:", error);
+    }
+}
+
+async function updatePlayerData(previousGames) {
+    try {
+        const response = await fetch(cloudURL + `/addDocumentData?collectionName=player-data`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: sessionStorage.getItem('user-id'),
+                accessibilityWorlde: previousGames
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Data added successfully:", data);
+    } catch (error) {
+        console.error("Error adding data:", error);
+    }
+}
+
+if(sessionStorage.getItem('gameID') == null){
+    createGameDocument();
+} else {
+    gameID = sessionStorage.getItem('gameID');
+}
+
+async function fbAdd(fieldKey, fieldValue) {
+    try {
+        const response = await fetch(cloudURL + `/addDocumentData?collectionName=${collectionName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: gameID,
+                [fieldKey]: fieldValue
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Data added successfully:", data);
+
+    } catch (error) {
+        console.error("Error adding data:", error);
+    }
+}
 
 // Get the modal and close button
 var modal = document.getElementById('info-modal');
 var closeButton = document.querySelector('.close');
 var infoButton = document.querySelector('.info-btn');
+
+if (!sessionStorage.getItem('playedRounds')) {
+    sessionStorage.setItem('playedRounds', 0);
+} else if (parseInt(sessionStorage.getItem('playedRounds')) >= gameConfig.maxRounds){
+    const keyToKeep = "user-id";
+    const valueToKeep = sessionStorage.getItem(keyToKeep);
+
+    sessionStorage.clear();
+
+    if (valueToKeep !== null) {
+        sessionStorage.setItem(keyToKeep, valueToKeep);
+    }
+
+    window.location.reload();
+}
+
+if (!sessionStorage.getItem('score')) {
+    sessionStorage.setItem('score', 0);
+}
+
+if (!sessionStorage.getItem('usedWords')) {
+    sessionStorage.setItem('usedWords', JSON.stringify([]));
+}
 
 // Show the modal when the "Info" button is clicked
 infoButton.addEventListener('click', function () {
@@ -27,12 +159,15 @@ window.addEventListener('click', function (event) {
     }
 });
 
+var playedRounds = parseInt(sessionStorage.getItem("playedRounds")) + 1;
+document.getElementById("question-number").innerText = "Q" + playedRounds + ".";
 
 
 // Function to get a random word from the accessibility list
 var randomWord = function () {
+    let usedWords = JSON.parse(sessionStorage.getItem("usedWords")) || [];
     let unusedWords = accessibilityWords.filter(wordData => 
-        !gameConfig.usedWords.includes(wordData.word.toLowerCase())
+        !usedWords.includes(wordData.word.toLowerCase())
     );
     var randomIndex = Math.floor(Math.random() * unusedWords.length);
     return unusedWords[randomIndex];
@@ -60,18 +195,23 @@ var disableButtons = function () {
 // Function to reset the game board and handle new rounds
 function resetGameBoard() {
     // Check if the maximum rounds have been played before starting a new game
-    if (gameConfig.playedRounds >= gameConfig.maxRounds) {
+    if (parseInt(sessionStorage.getItem("playedRounds")) >= gameConfig.maxRounds) {
+        alert("Game Over!");
         alertBox.classList.toggle('active');
         alertBox.innerHTML = `
             <div style="text-align: center; padding: 20px;">
                 <h2 style="color: red; font-size: 40px; margin-bottom: 10px;">Game Over!</h2>
                 <p style="font-size: 35px;">You have played all ${gameConfig.maxRounds} rounds.</p>
                 <p style="font-size: 35px;">Thank you for playing!</p>
+                <button onclick="location.reload();" style="width: 100px;">PLAY AGAIN</button>
             </div>
         `;
         disableButtons();  // Disable gameplay buttons
         return;  // Do not proceed with resetting the board or starting a new game
     }
+
+    var playedRounds = parseInt(sessionStorage.getItem("playedRounds")) + 1;
+    document.getElementById("question-number").innerText = "Q" + playedRounds + ".";
 
     guessedWord = ""; // Reset guessed word
     guess = 0; // Reset guess count
@@ -89,13 +229,14 @@ function resetGameBoard() {
         button.classList.remove('correct', 'present', 'incorrect');
     });
 
-    // Select a new correct word and ensure it hasn't been used before
-    do {
-        correctWordData = randomWord();  // Get a random word
-    } while (gameConfig.usedWords.includes(correctWordData.word.toLowerCase()));
+    let usedWords = JSON.parse(sessionStorage.getItem("usedWords")) || [];
+    usedWords.push(correctWord);
+    sessionStorage.setItem("usedWords", JSON.stringify(usedWords));
+
+    // Select a new correct word and ensure it hasn't been used before  
+    correctWordData = randomWord();
 
     correctWord = correctWordData.word.toLowerCase(); // Set the new correct word
-    gameConfig.usedWords.push(correctWord);  // Add the word to the used words list
 
     // Increment the played rounds **only after selecting a new word**
     
@@ -106,14 +247,16 @@ function resetGameBoard() {
 
 // New Game button functionality
 newGame.addEventListener("click", function () {
+    let playedRounds = parseInt(sessionStorage.getItem("playedRounds")) || 0;
 
-    gameConfig.playedRounds++;
-    // Ensure that rounds have not been exceeded
-    if (gameConfig.playedRounds < gameConfig.maxRounds) {
-        resetGameBoard();  // Reset the game board
-        newGame.style.display = "none";  // Hide the "New Game" button after it's clicked
-        scoreDisplay.innerText = score;  // Ensure score is displayed correctly
-    }
+    playedRounds += 1;
+
+    sessionStorage.setItem("playedRounds", playedRounds);
+
+    resetGameBoard();  // Reset the game board
+    newGame.style.display = "none";  // Hide the "New Game" button after it's clicked
+    scoreDisplay.innerText = parseInt(sessionStorage.getItem("score"));  // Ensure score is displayed correctly
+    newGame.style.display = "none";
 });
 
 
@@ -220,10 +363,10 @@ for (var i = 0; i < buttons.length; i++) {
                     
                         disableButtons();
                         newGame.style.display = "block";
-                        newGame.addEventListener("click", function () {
-                            resetGameBoard();  // Reset the game state (not the score)
-                            newGame.style.display = "none";  // Hide the "New Game" button after it's clicked
-                        });
+                        // newGame.addEventListener("click", function () {
+                        //     resetGameBoard();  // Reset the game state (not the score)
+                        //     newGame.style.display = "none";  // Hide the "New Game" button after it's clicked
+                        // });
                         return;
                     }
                     
@@ -250,10 +393,10 @@ for (var i = 0; i < buttons.length; i++) {
                         newGame.style.display = "block";  // Show the "New Game" button
                     
                         // Update the "New Game" button functionality
-                        newGame.addEventListener("click", function () {
-                            resetGameBoard();  // Reset the game state (not the score)
-                            newGame.style.display = "none";  // Hide the "New Game" button after it's clicked
-                        });
+                        // newGame.addEventListener("click", function () {
+                        //     resetGameBoard();  // Reset the game state (not the score)
+                        //     newGame.style.display = "none";  // Hide the "New Game" button after it's clicked
+                        // });
                         return;
                     }
                     
@@ -289,34 +432,41 @@ document.addEventListener("keydown", function (e) {
 });
 
 // Initialize score variable
-let score = 0;
 
 // Reference to score display and reset button
 const scoreDisplay = document.getElementById('score');
-const resetScoreButton = document.querySelector('.reset-score');
+// const resetScoreButton = document.querySelector('.reset-score');
 
 // Function to update score display
 function updateScoreDisplay() {
-    scoreDisplay.innerText = score;
+    scoreDisplay.innerText = parseInt(sessionStorage.getItem("score"));
 }
+
+updateScoreDisplay();
 
 // Increment score on win
 function onWin() {
+    var score = parseInt(sessionStorage.getItem("score"));
     score += 10;  // Add points for winning
+    sessionStorage.setItem("score", score);
     updateScoreDisplay();
+    fbAdd("currentCumulativeScore" + sessionStorage.getItem('playedRounds'), score);
 }
 
 // Decrement score on loss
 function onLoss() {
-    score -= 5;   // Deduct points for losing
-    updateScoreDisplay();
+    var score = parseInt(sessionStorage.getItem("score"));
+    score -= 5;  // Add points for winning
+    sessionStorage.setItem("score", score);
+    updateScoreDisplay(); 
+    fbAdd("currentCumulativeScore" + sessionStorage.getItem('playedRounds'), score);
 }
 
 // Reset score button functionality
-resetScoreButton.addEventListener('click', function() {
-    score = 0;
-    updateScoreDisplay();
-});
+// resetScoreButton.addEventListener('click', function() {
+//     score = 0;
+//     updateScoreDisplay();
+// });
 
 
 
