@@ -1,2 +1,2 @@
-var cloudURL = "http://127.0.0.1:3000";
+var cloudURL = "http://0.0.0.0:3000";
 var collectionName = "accessibility-wordle-users";
